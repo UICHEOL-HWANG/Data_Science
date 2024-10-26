@@ -1,0 +1,14 @@
+services:
+  jupyterlab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./workdir:/home/jovyan/work
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=/o4falW5T3OO7ubR/35svQ==
+    restart: always
