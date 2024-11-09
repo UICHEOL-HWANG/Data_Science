@@ -4,11 +4,21 @@ services:
       context: .
       dockerfile: Dockerfile
 
+    env_file:
+      - .env
     ports:
       - "8888:8888"
     volumes:
       - ./workdir:/home/jovyan/work
+
     environment:
       - JUPYTER_ENABLE_LAB=yes
-      - JUPYTER_TOKEN=/o4falW5T3OO7ubR/35svQ==
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN}
     restart: always
+
+    networks:
+      - data_science
+
+networks:
+  data_science:
+    external: True
