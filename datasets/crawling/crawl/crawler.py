@@ -9,8 +9,8 @@ class Crawler:
         self.session = req.Session()
 
 
-    def fetch_data(self, url: str, param=None) -> str:
+    def fetch_urls(self, url: str, param=None) -> str:
         response = self.session.get(url, params=param)
         response.raise_for_status()
 
-        return response.url
+        return response.content.decode('utf-8')
