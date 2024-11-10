@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+datasets/crawling/crawl/.natcode
 # C extensions
 *.so
 hub/.env

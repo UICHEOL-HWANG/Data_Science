@@ -1,14 +1,18 @@
 from crawl.crawler import Crawler
 from crawl.parser import Parser
+from crawl.config import Setconfig
 
 from dotenv import load_dotenv
 from typing import List, Dict, Any
 import os
 
+
+import json
 import psycopg2
 import pandas as pd
 import xmltodict
 import itertools
+
 
 from sqlalchemy import create_engine
 
@@ -65,35 +69,53 @@ class Controller:
 
         # 데이터 수집 및 파싱
         crawling = self.crawler.fetch_urls(urls, param=param)
-        print(crawling)
-        parsed_data = self.parser.fetch_tourist_data(crawling)
+
+        # parsed_data = self.parser.fetch_tourist_data(crawling)
+        # print(parsed_data)
+        # 투어리스트 데이터
+
+        # parsed_data = self.parser.fetch_stats_tourist_data(crawling)
+        # print(parsed_data)
+
+        parsed_data = self.parser.fetch_stats_detail_data(crawling)
         print(parsed_data)
 
-        data_lst.append(parsed_data)
+        if parsed_data is not None:
+
+        # 실질 방한 외국인 통계 데이터
+            data_lst.append(parsed_data)
+
         return data_lst
 
 
 # 메인 실행 코드
 if __name__ == "__main__":
-    controller = Controller()
-    engine = controller.load_to_psycopg()
 
-    months = [f'2023{mth:02}' for mth in range(1, 13)]
-    gender = ['M', 'F']
-    ages = [x for x in range(10, 90, 10)]
+    controller = Controller() # 메인 컨트롤 클래스
+    engine = controller.load_to_psycopg() # DB connections
+    config = Setconfig()
+
+    months = config.months
+    gender = config.gender
+    age = config.ages
+    natcode = config.natcode
 
 
-    # 동적 파라미터 설정
 
-    param_combinations = itertools.product(months, gender, ages)
-    # 3중 루프 피하기 위해 사용
-    for month, sex, age in param_combinations:
+    param_combinations = itertools.product(months, natcode, age, gender)
+    # 2중 루프 피하기 위해 사용
+    for month, natcd, ages, sex in param_combinations:
+        # 동적 파라미터 설정
         params = controller.insert_params(
             YM=month,
-            SEX_CD=sex,
-            AGE_CD=age,
-            PORT_CD='IA'
+            NAT_CD=natcd,
+            AGE_CD=ages,
+            TRA_PURP_CD='02',
+            PORT_CD='IA',
+            SEX_CD=sex
         )
+
+
 
         # 데이터 가져오기
         controller.fetch_data(urls=controller.base_url, **params)
@@ -102,13 +124,13 @@ if __name__ == "__main__":
         data = pd.DataFrame(controller.data_lst)
 
         try:
-            data.to_sql('tourist_domestic',
+            data.to_sql('tourist_stats_detail',
                 con=engine,
                 if_exists='append',
                 schema='public',  # Update to the correct schema
                 index=False
             )
-            print(f"Data for {month}, {sex}, {age} saved successfully.")
+            print(f"Data for saved successfully.")
 
         except Exception as e:
-            print(f"Error saving data for {month}, {sex}, {age}: {e}")
+            print(f"Error saving data for {e}")
