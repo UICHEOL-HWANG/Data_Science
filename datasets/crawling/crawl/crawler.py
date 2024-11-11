@@ -13,4 +13,4 @@ class Crawler:
         response = self.session.get(url, params=param)
         response.raise_for_status()
 
-        return response.url
+        return response.text
